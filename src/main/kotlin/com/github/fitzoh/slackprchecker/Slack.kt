@@ -2,6 +2,8 @@ package com.github.fitzoh.slackprchecker
 
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import org.springframework.boot.context.properties.ConfigurationProperties
+import org.springframework.context.annotation.Configuration
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 import org.springframework.web.reactive.function.client.WebClient
@@ -26,7 +28,7 @@ data class SlashCommand(var token: String?,
  * Don't judge me, quick and dirty
  */
 @RestController
-class SlashCommandController(val pullRequestService: PullRequestService) {
+class SlashCommandController(val pullRequestService: PullRequestService, val slackConfiguration: SlackConfiguration) {
 
     val webClient: WebClient = WebClient.create()
     val log: Logger = LoggerFactory.getLogger(SlashCommandController::class.java)
@@ -41,6 +43,9 @@ class SlashCommandController(val pullRequestService: PullRequestService) {
 
     @RequestMapping("/")
     fun handleSlashCommand(command: SlashCommand): Mono<Map<String, Any>> {
+        if (command.token != slackConfiguration.token) {
+            throw IllegalArgumentException("invalid slack command")
+        }
         log.info("slash command: {}", command)
         CompletableFuture.runAsync {
 
@@ -65,4 +70,11 @@ class SlashCommandController(val pullRequestService: PullRequestService) {
         return Mono.just(mapOf("text" to "processing request"))
     }
 
+}
+
+
+@Configuration
+@ConfigurationProperties("slack")
+class SlackConfiguration {
+    lateinit var token: String
 }

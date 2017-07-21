@@ -1,0 +1,5 @@
+github:
+  username: <your username>
+  token: <personal access token with scopes [read:org, repo]>
+  orgName: cahcommercial
+  teamName: <your team name ex: "Squid Squad">
